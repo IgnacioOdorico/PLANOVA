@@ -46,33 +46,29 @@ public class JwtFilter extends OncePerRequestFilter {
         String token = authHeader.substring(7);
 
         try {
-            if (!jwtService.isTokenValid(token)) {
+            if (jwtService.isTokenValid(token)) {
+                String email = jwtService.extractEmail(token);
+
+                if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+
+                    usuarioRepository.findByEmail(email).ifPresent(usuario -> {
+
+                        UsernamePasswordAuthenticationToken authToken =
+                                new UsernamePasswordAuthenticationToken(
+                                        usuario,
+                                        null,
+                                        Collections.emptyList()
+                                );
+
+                        authToken.setDetails(
+                                new WebAuthenticationDetailsSource().buildDetails(request)
+                        );
+
+                        SecurityContextHolder.getContext().setAuthentication(authToken);
+                    });
+                }
+            } else {
                 log.warn("Token JWT inválido o expirado en request a: {}", request.getRequestURI());
-                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                response.setContentType("application/json");
-                response.getWriter().write("{\"status\":401,\"message\":\"Token inválido o expirado\"}");
-                return;
-            }
-
-            String email = jwtService.extractEmail(token);
-
-            if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-
-                usuarioRepository.findByEmail(email).ifPresent(usuario -> {
-
-                    UsernamePasswordAuthenticationToken authToken =
-                            new UsernamePasswordAuthenticationToken(
-                                    usuario,
-                                    null,
-                                    Collections.emptyList()
-                            );
-
-                    authToken.setDetails(
-                            new WebAuthenticationDetailsSource().buildDetails(request)
-                    );
-
-                    SecurityContextHolder.getContext().setAuthentication(authToken);
-                });
             }
 
         } catch (Exception e) {
