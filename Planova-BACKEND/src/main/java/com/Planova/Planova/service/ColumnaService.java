@@ -56,6 +56,7 @@ public class ColumnaService {
                 .id(c.getId())
                 .titulo(c.getTitulo())
                 .orden(c.getOrden())
+                .sortingMode(c.getSortingMode())
                 .proyectoId(c.getProyecto().getId())
                 .tareas(tareas)
                 .build();
@@ -88,6 +89,7 @@ public class ColumnaService {
         Columna columna = Columna.builder()
                 .titulo(request.getTitulo())
                 .orden(request.getOrden())
+                .sortingMode(request.getSortingMode() != null ? request.getSortingMode() : "prioridad")
                 .proyecto(proyecto)
                 .build();
 
@@ -117,6 +119,10 @@ public class ColumnaService {
 
         if (request.getOrden() != null) {
             columna.setOrden(request.getOrden());
+        }
+
+        if (request.getSortingMode() != null) {
+            columna.setSortingMode(request.getSortingMode());
         }
 
         return mapToDTO(columnaRepository.save(columna));

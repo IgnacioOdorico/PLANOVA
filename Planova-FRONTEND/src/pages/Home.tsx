@@ -15,6 +15,7 @@ export const HomePage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingProject, setEditingProject] = useState<Proyecto | null>(null);
 
   // Fetch projects on mount
   const fetchProyectos = useCallback(async () => {
@@ -35,14 +36,27 @@ export const HomePage: React.FC = () => {
     fetchProyectos();
   }, [fetchProyectos]);
 
-  // Handle new project creation
-  const handleCreateProject = async (data: ProyectoCreate) => {
+  // Handle project creation/update
+  const handleSaveProject = async (data: ProyectoCreate, id?: number) => {
     try {
-      const newProject = await proyectoService.create(data);
-      setProyectos((prev) => [...prev, newProject]);
+      if (id) {
+        const updated = await proyectoService.update(id, data);
+        setProyectos((prev) => prev.map(p => p.id === id ? { ...p, ...updated } : p));
+      } else {
+        const newProject = await proyectoService.create(data);
+        setProyectos((prev) => [...prev, newProject]);
+      }
     } catch (err) {
-      console.error('Error creating project:', err);
+      console.error('Error saving project:', err);
       throw err;
+    }
+  };
+
+  const handleEdit = (id: number) => {
+    const project = proyectos.find(p => p.id === id);
+    if (project) {
+      setEditingProject(project);
+      setIsModalOpen(true);
     }
   };
 
@@ -85,13 +99,19 @@ export const HomePage: React.FC = () => {
                 key={proyecto.id}
                 id={proyecto.id}
                 nombre={proyecto.nombre}
+                tareaCount={proyecto.tareaCount}
+                fechaCreacion={proyecto.fechaCreacion}
+                onEdit={handleEdit}
               />
             ))}
             
             {/* Create New Project Card */}
             <div 
               className="flex items-center justify-center cursor-pointer transition-all hover:bg-white/10 rounded-2xl group"
-              onClick={() => setIsModalOpen(true)}
+              onClick={() => {
+                setEditingProject(null);
+                setIsModalOpen(true);
+              }}
               style={{
                 border: '1.5px solid rgba(255,255,255,0.4)',
                 background: 'rgba(255,255,255,0.03)',
@@ -111,8 +131,12 @@ export const HomePage: React.FC = () => {
       {/* Create Project Modal */}
       <CreateProjectModal
         isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onSubmit={handleCreateProject}
+        onClose={() => {
+          setIsModalOpen(false);
+          setEditingProject(null);
+        }}
+        onSubmit={handleSaveProject}
+        project={editingProject}
       />
     </div>
   );

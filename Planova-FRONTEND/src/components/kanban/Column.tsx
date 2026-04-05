@@ -1,12 +1,9 @@
-/**
- * Column Component for Planova Kanban Board
- * Glass column with title, task list, drop zone, and add task button
- */
-
+import { useState, useMemo, useEffect } from 'react';
 import { useDroppable } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
-import { Columna, Tarea } from '../../types';
+import { Columna, Tarea, Prioridad, Estado } from '../../types';
 import TareaCard from './TareaCard';
+import { columnaService } from '../../services/columnaService';
 
 interface ColumnProps {
   column: Columna;
@@ -19,6 +16,8 @@ interface ColumnProps {
   onViewNotes?: (tarea: Tarea) => void;
 }
 
+type SortCriteria = 'prioridad' | 'estado' | 'fecha';
+
 const Column: React.FC<ColumnProps> = ({
   column,
   tareas,
@@ -29,13 +28,98 @@ const Column: React.FC<ColumnProps> = ({
   onEditColumn,
   onViewNotes,
 }) => {
+  const [sortBy, setSortBy] = useState<SortCriteria>((column.sortingMode as SortCriteria) || 'prioridad');
+
+  // Sync with prop when data reloads (e.g. after task move)
+  useEffect(() => {
+    if (column.sortingMode && column.sortingMode !== sortBy) {
+      setSortBy(column.sortingMode as SortCriteria);
+    }
+  }, [column.sortingMode]);
+
   const { setNodeRef, isOver } = useDroppable({
     id: `column-${column.id}`,
     data: { type: 'column', columnId: column.id },
   });
 
+  const sortedTareas = useMemo(() => {
+    const priorityOrder: Record<Prioridad, number> = { alta: 3, media: 2, baja: 1 };
+    const statusOrder: Record<Estado, number> = { vencida: 4, en_proceso: 3, pendiente: 2, completada: 1 };
+
+    return [...tareas].sort((a, b) => {
+      if (sortBy === 'prioridad') {
+        const diff = priorityOrder[b.prioridad] - priorityOrder[a.prioridad];
+        if (diff !== 0) return diff;
+        // Fallback to title
+        return a.titulo.localeCompare(b.titulo);
+      }
+      if (sortBy === 'estado') {
+        const diff = statusOrder[b.estado] - statusOrder[a.estado];
+        if (diff !== 0) return diff;
+        return a.titulo.localeCompare(b.titulo);
+      }
+      if (sortBy === 'fecha') {
+        if (!a.fechaVencimiento && !b.fechaVencimiento) return a.titulo.localeCompare(b.titulo);
+        if (!a.fechaVencimiento) return 1;
+        if (!b.fechaVencimiento) return -1;
+        const diff = new Date(a.fechaVencimiento).getTime() - new Date(b.fechaVencimiento).getTime();
+        if (diff !== 0) return diff;
+        return a.titulo.localeCompare(b.titulo);
+      }
+      return 0;
+    });
+  }, [tareas, sortBy]);
+
+  const toggleSort = async () => {
+    const sequence: SortCriteria[] = ['prioridad', 'fecha', 'estado'];
+    const currentIndex = sequence.indexOf(sortBy);
+    const nextIndex = (currentIndex + 1) % sequence.length;
+    const nextSort = sequence[nextIndex];
+    
+    // Optimistic update
+    setSortBy(nextSort);
+    
+    // Persist to backend
+    try {
+      await columnaService.update(column.id, { sortingMode: nextSort });
+    } catch (err) {
+      console.error('Error saving sort preference:', err);
+    }
+  };
+
+  const getSortIcon = () => {
+    switch(sortBy) {
+      case 'prioridad': return (
+        <svg className="w-4 h-4 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+        </svg>
+      );
+      case 'estado': return (
+        <svg className="w-4 h-4 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+      );
+      case 'fecha': return (
+        <svg className="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+      );
+    }
+  };
+
+  const getSortTitle = () => {
+    switch(sortBy) {
+      case 'prioridad': return "Ordenando por: Prioridad (Alta a Baja)";
+      case 'fecha': return "Ordenando por: Fecha de Vencimiento (Más cercana)";
+      case 'estado': return "Ordenando por: Estado (Vencida a Completada)";
+    }
+  };
+
   return (
-    <div className="flex-shrink-0 w-[320px]">
+    <div 
+      ref={setNodeRef}
+      className={`flex-shrink-0 w-[320px] transition-colors duration-200 ${isOver ? 'bg-white/5' : ''} rounded-3xl`}
+    >
       <div 
         className="h-full flex flex-col rounded-3xl backdrop-blur-lg"
         style={{
@@ -45,12 +129,26 @@ const Column: React.FC<ColumnProps> = ({
         }}
       >
         {/* Column Header */}
-        <div className="p-4 border-b-4 border-white/10 text-center">
-          <div className="flex items-center justify-between">
-            <div className="flex flex-col items-center justify-center w-full">
-              <h3 className="text-2xl font-light text-white uppercase tracking-wider" style={{ fontFamily: 'Kalam, cursive' }}>{column.titulo}</h3>
-            </div>
-            <div className="absolute right-4 flex items-center gap-1">
+        <div className="p-4 border-b-4 border-white/10">
+          <div className="flex items-center justify-between gap-2">
+            <h3 
+              className="text-xl font-light text-white uppercase tracking-wider line-clamp-2 break-words flex-1 text-center" 
+              style={{ fontFamily: 'Kalam, cursive' }} 
+              title={column.titulo}
+            >
+              {column.titulo}
+            </h3>
+            
+            <div className="flex items-center gap-1">
+              {/* Sort Cycle Button */}
+              <button
+                onClick={toggleSort}
+                className="p-1.5 rounded-lg transition-all bg-white/10 shadow-lg hover:bg-white/20"
+                title={getSortTitle()}
+              >
+                {getSortIcon()}
+              </button>
+
               {onEditColumn && (
                 <button
                   onClick={() => onEditColumn(column)}
@@ -62,6 +160,7 @@ const Column: React.FC<ColumnProps> = ({
                   </svg>
                 </button>
               )}
+
               <button
                 onClick={(e) => {
                   e.stopPropagation();
@@ -79,20 +178,15 @@ const Column: React.FC<ColumnProps> = ({
           </div>
         </div>
 
-        {/* Task List - Drop Zone */}
+        {/* Task List - Drop Zone (Inside) */}
         <div
-          ref={setNodeRef}
-          className={`
-            flex-1 p-3 overflow-y-auto space-y-3 min-h-[200px]
-            transition-colors duration-200
-            ${isOver ? 'bg-white/5' : ''}
-          `}
+          className="flex-1 p-3 overflow-y-auto space-y-3 min-h-[200px]"
         >
           <SortableContext
-            items={tareas.map(t => `tarea-${t.id}`)}
+            items={sortedTareas.map(t => `tarea-${t.id}`)}
             strategy={verticalListSortingStrategy}
           >
-            {tareas.map((tarea) => (
+            {sortedTareas.map((tarea) => (
               <TareaCard
                 key={tarea.id}
                 tarea={tarea}
@@ -109,7 +203,7 @@ const Column: React.FC<ColumnProps> = ({
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
               </svg>
               <p className="text-sm">No hay tareas</p>
-              <p className="text-xs mt-1">Arrastra tareas aqui o crea una nueva</p>
+              <p className="text-xs mt-1">Arrastra tareas aqui para cambiar de columna</p>
             </div>
           )}
         </div>
@@ -125,5 +219,7 @@ const Column: React.FC<ColumnProps> = ({
     </div>
   );
 };
+
+
 
 export default Column;

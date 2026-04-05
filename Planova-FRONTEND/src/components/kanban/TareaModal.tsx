@@ -8,6 +8,7 @@ import { Tarea, TareaCreate, Prioridad, PrioridadLabels, PRIORIDADES, EstadoLabe
 import GlassCard from '../common/GlassCard';
 import GlassButton from '../common/GlassButton';
 import GlassInput from '../common/GlassInput';
+import { getApiErrorMessage } from '../../services/api';
 
 interface TareaModalProps {
   isOpen: boolean;
@@ -67,14 +68,14 @@ const TareaModal: React.FC<TareaModalProps> = ({
       descripcion: descripcion.trim() || undefined,
       prioridad,
       estado,
-      ...(fechaVencimiento ? { fechaVencimiento: new Date(fechaVencimiento).toISOString() } : { fechaVencimiento: null })
+      fechaVencimiento: fechaVencimiento ? fechaVencimiento : null
     };
 
     try {
       await onSave(data, tarea?.id);
       onClose();
     } catch (err) {
-      setError('Error al guardar la tarea');
+      setError(getApiErrorMessage(err));
     }
   };
 
@@ -119,17 +120,20 @@ const TareaModal: React.FC<TareaModalProps> = ({
             onChange={(e) => setTitulo(e.target.value)}
             placeholder="Nombre de la tarea"
             required
+            maxLength={100}
           />
 
           <div>
             <label className="block text-sm font-medium text-white/80 mb-1.5">
               Descripción
+              <span className="text-[10px] ml-2 opacity-40">({descripcion.length}/400)</span>
             </label>
             <textarea
               value={descripcion}
               onChange={(e) => setDescripcion(e.target.value)}
               placeholder="Descripción opcional de la tarea"
               rows={3}
+              maxLength={400}
               className="w-full glass-input rounded-xl px-4 py-2.5 text-white placeholder-white/30 resize-none"
             />
           </div>

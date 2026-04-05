@@ -24,6 +24,9 @@ public class Columna {
     private String titulo;
 
     private Integer orden;
+    
+    @Builder.Default
+    private String sortingMode = "prioridad";
 
     // Muchas columnas pertenecen a un proyecto
     @ManyToOne

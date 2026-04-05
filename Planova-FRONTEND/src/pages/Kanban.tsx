@@ -8,7 +8,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import {
   DndContext,
   DragOverlay,
-  closestCorners,
+  pointerWithin,
   KeyboardSensor,
   PointerSensor,
   useSensor,
@@ -57,6 +57,7 @@ export const KanbanPage: React.FC = () => {
 
   // Drag state
   const [activeTarea, setActiveTarea] = useState<Tarea | null>(null);
+  const [sourceColumnId, setSourceColumnId] = useState<number | null>(null);
 
   // Notes panel state
   const [isNotesPanelOpen, setIsNotesPanelOpen] = useState(false);
@@ -188,11 +189,12 @@ export const KanbanPage: React.FC = () => {
     const { active } = event;
     const tareaId = active.id.toString().replace('tarea-', '');
     
-    // Find the task in columns
+    // Find the task and its original column
     for (const col of columnas) {
       const tarea = col.tareas.find(t => t.id === parseInt(tareaId, 10));
       if (tarea) {
         setActiveTarea(tarea);
+        setSourceColumnId(col.id);
         break;
       }
     }
@@ -247,10 +249,11 @@ export const KanbanPage: React.FC = () => {
 
     if (targetColumnIndex === -1) return;
 
-    // If same column and same position, no need to update state
-    if (sourceColumnIndex === targetColumnIndex && sourceTareaIndex === targetTareaIndex) return;
+    // If same column, we do NOT handle optimistic intra-column reordering anymore 
+    // because Column.tsx handles its own automatic sorting.
+    if (sourceColumnIndex === targetColumnIndex) return;
 
-    // Optimistic update - move within state
+    // Optimistic update - move between columns
     const newColumnas = [...columnas];
     const sourceColumn = { ...newColumnas[sourceColumnIndex] };
     const tarea = sourceColumn.tareas[sourceTareaIndex];
@@ -260,27 +263,15 @@ export const KanbanPage: React.FC = () => {
       ...sourceColumn.tareas.slice(sourceTareaIndex + 1),
     ];
 
-    if (sourceColumnIndex === targetColumnIndex) {
-      // Moving within same column
-      const insertIndex = targetTareaIndex > sourceTareaIndex ? targetTareaIndex : targetTareaIndex;
-      sourceColumn.tareas = [
-        ...sourceColumn.tareas.slice(0, insertIndex),
-        tarea,
-        ...sourceColumn.tareas.slice(insertIndex),
-      ];
-      newColumnas[sourceColumnIndex] = sourceColumn;
-    } else {
-      // Moving to different column
-      newColumnas[sourceColumnIndex] = sourceColumn;
-      
-      const targetColumn = { ...newColumnas[targetColumnIndex] };
-      targetColumn.tareas = [
-        ...targetColumn.tareas.slice(0, targetTareaIndex),
-        tarea,
-        ...targetColumn.tareas.slice(targetTareaIndex),
-      ];
-      newColumnas[targetColumnIndex] = targetColumn;
-    }
+    newColumnas[sourceColumnIndex] = sourceColumn;
+    
+    const targetColumn = { ...newColumnas[targetColumnIndex] };
+    targetColumn.tareas = [
+      ...targetColumn.tareas.slice(0, targetTareaIndex),
+      tarea,
+      ...targetColumn.tareas.slice(targetTareaIndex),
+    ];
+    newColumnas[targetColumnIndex] = targetColumn;
 
     setColumnas(newColumnas);
   };
@@ -300,53 +291,50 @@ export const KanbanPage: React.FC = () => {
     const overTareaId = overId.startsWith('tarea-') ? parseInt(overId.replace('tarea-', ''), 10) : null;
     const overColumnId = overId.startsWith('column-') ? parseInt(overId.replace('column-', ''), 10) : null;
 
-    // Find source column
-    let sourceColumn: ColumnaWithTareas | null = null;
-    for (let i = 0; i < columnas.length; i++) {
-      const idx = columnas[i].tareas.findIndex(t => t.id === activeTareaId);
-      if (idx !== -1) {
-        sourceColumn = columnas[i];
-        break;
-      }
+    if (!sourceColumnId) {
+      setActiveTarea(null);
+      setSourceColumnId(null);
+      return;
     }
 
-    if (!sourceColumn) return;
-
-    // Determine target column and new position
+    // Determine target column
     let targetColumnId: number | null = null;
-    let newOrden: number | null = null;
 
     if (overColumnId) {
       targetColumnId = overColumnId;
-      newOrden = 0;
     } else if (overTareaId !== null) {
       for (let i = 0; i < columnas.length; i++) {
         const idx = columnas[i].tareas.findIndex(t => t.id === overTareaId);
         if (idx !== -1) {
           targetColumnId = columnas[i].id;
-          newOrden = idx;
           break;
         }
       }
-    } else {
+    }
+
+    if (targetColumnId === null) return;
+
+    // MANDATORY CHANGE: If moved within same column, do NOTHING. 
+    // We compare with the ORIGINAL sourceColumnId to avoid the optimistic update bug.
+    if (sourceColumnId === targetColumnId) {
+      setActiveTarea(null);
+      setSourceColumnId(null);
       return;
     }
 
-    if (targetColumnId === null || newOrden === null) return;
-
-    // If moved within same column, we already updated state optimistically
-    // Now we need to sync with backend
+    // Moving to different column
     try {
       const moveData: MoverTarea = {
         columnaId: targetColumnId,
-        orden: newOrden,
+        orden: 0, // When moving to a new column, we can put it at the top; 
+                  // the Column component will immediately re-sort it anyway.
       };
       await tareaService.mover(activeTareaId, moveData);
-      // Reload to get proper order from server
+      setSourceColumnId(null);
       await loadData();
     } catch (err) {
       console.error('Error moving task:', err);
-      // Revert to server state
+      setSourceColumnId(null);
       await loadData();
     }
   };
@@ -458,7 +446,7 @@ export const KanbanPage: React.FC = () => {
         <div className="flex gap-6 flex-1 min-h-[500px]">
           <DndContext
             sensors={sensors}
-            collisionDetection={closestCorners}
+            collisionDetection={pointerWithin}
             onDragStart={handleDragStart}
             onDragOver={handleDragOver}
             onDragEnd={handleDragEnd}
@@ -537,8 +525,12 @@ export const KanbanPage: React.FC = () => {
                 value={newColumnTitle}
                 onChange={(e) => setNewColumnTitle(e.target.value)}
                 placeholder="Ej: Por hacer, En progreso, Completado"
+                maxLength={30}
                 onKeyDown={(e) => e.key === 'Enter' && handleAddColumn()}
               />
+              <p className="text-[10px] text-white/30 text-right mt-1">
+                {newColumnTitle.length}/30
+              </p>
               <div className="flex gap-3 mt-4">
                 <GlassButton
                   variant="secondary"

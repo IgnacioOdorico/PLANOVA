@@ -52,6 +52,7 @@ export interface Proyecto {
   nombre: string;
   descripcion: string;
   usuarioId: number;
+  tareaCount?: number;
   fechaCreacion?: string;
 }
 
@@ -66,6 +67,7 @@ export interface Columna {
   id: number;
   titulo: string;
   orden: number;
+  sortingMode?: string;
   proyectoId: number;
   tareas: Tarea[];
 }
@@ -73,6 +75,7 @@ export interface Columna {
 export interface ColumnaCreate {
   titulo: string;
   orden?: number;
+  sortingMode?: string;
 }
 
 // ==================== Task Types ====================

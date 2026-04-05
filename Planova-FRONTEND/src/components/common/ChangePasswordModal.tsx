@@ -39,8 +39,8 @@ export const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
       return;
     }
 
-    if (newPassword.length < 6) {
-      setError('La contraseña debe tener al menos 6 caracteres');
+    if (newPassword.length < 8) {
+      setError('La contraseña debe tener al menos 8 caracteres');
       return;
     }
 
@@ -128,7 +128,7 @@ export const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
             value={newPassword}
             onChange={(e) => setNewPassword(e.target.value)}
             placeholder="Ingresa tu nueva contraseña"
-            hint="Mínimo 6 caracteres"
+            hint="Mínimo 8 caracteres"
             required
           />
 

@@ -12,6 +12,7 @@ public class ColumnaResponseDTO {
     private Long id;
     private String titulo;
     private Integer orden;
+    private String sortingMode;
     private Long proyectoId;
     private List<TareaResponseDTO> tareas;
 }

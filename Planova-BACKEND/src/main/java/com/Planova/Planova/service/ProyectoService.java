@@ -38,11 +38,21 @@ public class ProyectoService {
 
     // 🔁 mapper
     private ProyectoResponseDTO mapToDTO(Proyecto p) {
+        long totalTareas = 0;
+        if (p.getColumnas() != null) {
+            totalTareas = p.getColumnas().stream()
+                    .filter(c -> c.getTareas() != null)
+                    .mapToLong(c -> c.getTareas().size())
+                    .sum();
+        }
+
         return ProyectoResponseDTO.builder()
                 .id(p.getId())
                 .nombre(p.getNombre())
                 .descripcion(p.getDescripcion())
                 .usuarioId(p.getUsuario().getId())
+                .tareaCount(totalTareas)
+                .fechaCreacion(p.getFechaCreacion())
                 .build();
     }
 

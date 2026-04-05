@@ -3,27 +3,41 @@
  * Glass modal for creating new proyecto with form
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import GlassCard from '../common/GlassCard';
 import GlassButton from '../common/GlassButton';
 import GlassInput from '../common/GlassInput';
-import { ProyectoCreate } from '../../types';
+import { Proyecto, ProyectoCreate } from '../../types';
+import { getApiErrorMessage } from '../../services/api';
 
 interface CreateProjectModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (data: ProyectoCreate) => Promise<void>;
+  onSubmit: (data: ProyectoCreate, id?: number) => Promise<void>;
+  project?: Proyecto | null;
 }
 
 export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
   isOpen,
   onClose,
   onSubmit,
+  project,
 }) => {
   const [nombre, setNombre] = useState('');
   const [descripcion, setDescripcion] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    if (project) {
+      setNombre(project.nombre);
+      setDescripcion(project.descripcion || '');
+    } else {
+      setNombre('');
+      setDescripcion('');
+    }
+    setError('');
+  }, [project, isOpen]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -40,22 +54,26 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
       await onSubmit({
         nombre: nombre.trim(),
         descripcion: descripcion.trim() || undefined,
-      });
+      }, project?.id);
       
       // Reset form and close
-      setNombre('');
-      setDescripcion('');
+      if (!project) {
+        setNombre('');
+        setDescripcion('');
+      }
       onClose();
     } catch (err) {
-      setError('Error al crear el proyecto. Intenta de nuevo.');
+      setError(getApiErrorMessage(err));
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleClose = () => {
-    setNombre('');
-    setDescripcion('');
+    if (!project) {
+      setNombre('');
+      setDescripcion('');
+    }
     setError('');
     onClose();
   };
@@ -78,7 +96,7 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-xl font-semibold text-white">
-            Nuevo Proyecto
+            {project ? 'Editar Proyecto' : 'Nuevo Proyecto'}
           </h2>
           <button
             onClick={handleClose}
@@ -100,25 +118,28 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
               onChange={(e) => setNombre(e.target.value)}
               required
               autoFocus
+              maxLength={50}
             />
 
             <div className="w-full">
               <label className="block text-sm font-medium text-white/80 mb-1.5">
                 Descripción (opcional)
+                <span className="text-[10px] ml-2 opacity-40">({descripcion.length}/150)</span>
               </label>
               <textarea
-                className="w-full glass-input px-4 py-2.5 text-base rounded-xl bg-glass-100 border border-white/10 text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-white/20 transition-all duration-300 resize-none"
+                className="w-full glass-input px-4 py-2.5 text-base rounded-xl bg-glass-100 border border-white/10 text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-white/20 transition-all duration-300 resize-none font-sans"
                 placeholder="Describe tu proyecto..."
                 rows={3}
                 value={descripcion}
                 onChange={(e) => setDescripcion(e.target.value)}
+                maxLength={150}
               />
             </div>
 
             {error && (
               <p className="text-sm text-red-300 flex items-center gap-1">
                 <svg className="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1-1|v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
                 </svg>
                 {error}
               </p>
@@ -141,13 +162,13 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
               isLoading={isLoading}
               className="flex-1"
             >
-              Crear Proyecto
+              {project ? 'Guardar Cambios' : 'Crear Proyecto'}
             </GlassButton>
           </div>
         </form>
       </GlassCard>
     </div>
   );
-};
+};;
 
 export default CreateProjectModal;
