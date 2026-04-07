@@ -205,16 +205,95 @@ body {
   }
 
   .glass-extreme {
-    background: rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(25px);
-    -webkit-backdrop-filter: blur(25px);
-    border: 2px solid rgba(255, 255, 255, 0.3);
-    border-radius: 20px;
+    position: relative;
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(25px) saturate(180%);
+    -webkit-backdrop-filter: blur(25px) saturate(180%);
+    border-radius: 24px;
+    z-index: 1;
+    overflow: hidden; /* Captures nested borders and shimmers */
     box-shadow: 
-      inset 0 0 20px rgba(255,255,255,0.4),
-      inset 0 0 10px rgba(100,200,255,0.2),
-      0 0 30px rgba(255,255,255,0.2),
-      0 10px 40px rgba(0,0,0,0.8);
+      0 20px 50px rgba(0, 0, 0, 0.5),
+      inset 0 0 40px rgba(255, 255, 255, 0.05);
+  }
+
+  /* Outer Border Glow */
+  .glass-extreme::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    padding: 2px; /* Border thickness */
+    border-radius: 24px;
+    background: linear-gradient(
+      135deg, 
+      rgba(255, 255, 255, 0.5) 0%, 
+      rgba(255, 255, 255, 0.05) 40%, 
+      rgba(255, 255, 255, 0.2) 60%, 
+      rgba(255, 255, 255, 0.6) 100%
+    );
+    -webkit-mask: 
+      linear-gradient(#fff 0 0) content-box, 
+      linear-gradient(#fff 0 0);
+    mask: 
+      linear-gradient(#fff 0 0) content-box, 
+      linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+    z-index: -1;
+  }
+
+  /* Inner Border and Shimmers */
+  .glass-extreme::after {
+    content: '';
+    position: absolute;
+    inset: 4px; /* Space between borders */
+    padding: 1px;
+    border-radius: 20px;
+    background: conic-gradient(
+      from 0deg,
+      transparent 0%,
+      rgba(100, 200, 255, 0.8) 10%,
+      transparent 20%,
+      transparent 45%,
+      rgba(255, 255, 255, 0.9) 50%,
+      transparent 55%,
+      transparent 80%,
+      rgba(100, 200, 255, 0.8) 90%,
+      transparent 100%
+    );
+    -webkit-mask: 
+      linear-gradient(#fff 0 0) content-box, 
+      linear-gradient(#fff 0 0);
+    mask: 
+      linear-gradient(#fff 0 0) content-box, 
+      linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    animation: shimmer-rotate 6s linear infinite;
+    pointer-events: none;
+    z-index: -1;
+    opacity: 0.6;
+  }
+
+  /* Extra Sparkles Layer */
+  .glass-sparkles {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 2;
+  }
+
+  .glass-sparkle {
+    position: absolute;
+    background: white;
+    width: 2px;
+    height: 2px;
+    border-radius: 50%;
+    box-shadow: 0 0 10px 2px white;
+    opacity: 0;
+    animation: sparkle-blink var(--duration, 3s) ease-in-out infinite;
+    animation-delay: var(--delay, 0s);
   }
 
   .glass-input-extreme {
@@ -307,6 +386,10 @@ body {
     animation: float 8s ease-in-out infinite;
     animation-delay: -2s;
   }
+
+  .animate-shimmer {
+    animation: shimmer-rotate 6s linear infinite;
+  }
 }
 
 @keyframes float {
@@ -325,6 +408,20 @@ body {
   50% {
     box-shadow: 0 0 40px rgba(255, 255, 255, 0.2);
   }
+}
+
+@keyframes shimmer-rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes sparkle-blink {
+  0%, 100% { opacity: 0; transform: scale(0); }
+  50% { opacity: 0.8; transform: scale(1.2); }
 }
 
 /* Scrollbar styling */

@@ -4,14 +4,16 @@
  */
 
 import { ReactNode } from 'react';
+import GlassSparkles from './GlassSparkles';
 
-export type GlassCardVariant = 'default' | 'floating' | 'elevated' | 'subtle';
+export type GlassCardVariant = 'default' | 'floating' | 'elevated' | 'subtle' | 'extreme';
 
 interface GlassCardProps {
   children: ReactNode;
   variant?: GlassCardVariant;
   hoverable?: boolean;
   className?: string;
+  sparkleCount?: number;
   style?: React.CSSProperties;
   onClick?: () => void;
 }
@@ -21,6 +23,7 @@ export const GlassCard: React.FC<GlassCardProps> = ({
   variant = 'default',
   hoverable = false,
   className = '',
+  sparkleCount,
   style,
   onClick,
 }) => {
@@ -43,6 +46,7 @@ export const GlassCard: React.FC<GlassCardProps> = ({
       rounded-glass
       shadow-glass
     `,
+    extreme: 'glass-extreme',
   };
 
   const hoverClasses = hoverable 
@@ -58,6 +62,7 @@ export const GlassCard: React.FC<GlassCardProps> = ({
         ${variantClasses[variant]}
         ${hoverClasses}
         ${clickableClasses}
+        ${variant === 'extreme' ? '' : 'overflow-hidden'} /* Extreme card handles its own overflow for borders */
         ${className}
       `}
       style={style}
@@ -77,7 +82,8 @@ export const GlassCard: React.FC<GlassCardProps> = ({
       />
       
       {/* Content */}
-      <div className="relative z-10">
+      <div className="relative z-10 w-full h-full">
+        {variant === 'extreme' && <GlassSparkles count={sparkleCount || 8} />}
         {children}
       </div>
     </div>

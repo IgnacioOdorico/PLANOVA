@@ -117,7 +117,7 @@ export const PerfilPage: React.FC = () => {
           </div>
         )}
 
-        <GlassCard variant="floating" className="p-8">
+        <GlassCard variant="extreme" sparkleCount={10} className="p-8">
           {isEditing ? (
             /* Edit Profile Form */
             <form onSubmit={handleSaveProfile} className="space-y-6">

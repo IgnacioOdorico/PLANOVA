@@ -8,6 +8,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import mascotImg from '../../docs/assets/img para utilizar/Personaje de planova en azul.png';
 import { useAuth } from '../context/AuthContext';
 import { getApiErrorMessage } from '../services/api';
+import GlassSparkles from '../components/common/GlassSparkles';
 
 export const RegisterPage: React.FC = () => {
   const [nombre, setNombre] = useState('');
@@ -53,7 +54,7 @@ export const RegisterPage: React.FC = () => {
       {/* Animated background elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         {/* Floating orbs */}
-        <div 
+        <div
           className="absolute w-96 h-96 rounded-full opacity-30 animate-float"
           style={{
             background: 'radial-gradient(circle, rgba(99, 102, 241, 0.4) 0%, transparent 70%)',
@@ -61,7 +62,7 @@ export const RegisterPage: React.FC = () => {
             left: '10%',
           }}
         />
-        <div 
+        <div
           className="absolute w-80 h-80 rounded-full opacity-25 animate-float-delayed"
           style={{
             background: 'radial-gradient(circle, rgba(139, 92, 246, 0.4) 0%, transparent 70%)',
@@ -69,7 +70,7 @@ export const RegisterPage: React.FC = () => {
             right: '10%',
           }}
         />
-        <div 
+        <div
           className="absolute w-64 h-64 rounded-full opacity-20 animate-float"
           style={{
             background: 'radial-gradient(circle, rgba(59, 130, 246, 0.4) 0%, transparent 70%)',
@@ -81,16 +82,17 @@ export const RegisterPage: React.FC = () => {
       <div className="relative mt-16 z-10 w-full max-w-lg">
         {/* Mascot protruding */}
         <div className="absolute -top-[125px] -left-10 z-20 pointer-events-none">
-          <img 
+          <img
             src={mascotImg}
-            alt="Planova Mascot" 
+            alt="Planova Mascot"
             className="w-48 object-contain"
             style={{ filter: 'drop-shadow(0px 10px 15px rgba(0,0,0,0.6))' }}
           />
         </div>
 
         <div className="glass-extreme w-full px-12 pt-14 pb-10 relative z-0">
-          
+          <GlassSparkles count={8} />
+
           <div className="text-center mb-6">
             <h1 className="text-3xl font-medium tracking-[0.2em] text-white">PLANOVA</h1>
             <div className="flex items-center justify-center gap-2 mt-1 mb-2 opacity-50">
@@ -102,8 +104,8 @@ export const RegisterPage: React.FC = () => {
 
           <div className="mb-8 mt-2">
             <p className="text-white/90 text-xl leading-relaxed" style={{ fontFamily: 'Kalam, cursive' }}>
-              bienvenidos a Planova, planova es un<br/>
-              gestor de tareas, para q puedas estar<br/>
+              bienvenidos a Planova, planova es un<br />
+              gestor de tareas, para que puedas estar<br />
               siempre organizado
             </p>
           </div>
@@ -111,7 +113,7 @@ export const RegisterPage: React.FC = () => {
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Error Message */}
             {error && (
-              <div 
+              <div
                 className="p-3 rounded-xl text-sm text-red-200 flex flex-col items-center gap-1 text-center"
                 style={{
                   background: 'rgba(239, 68, 68, 0.15)',
@@ -124,7 +126,7 @@ export const RegisterPage: React.FC = () => {
 
             {/* Name Input */}
             <div className="flex flex-col text-center">
-              <label className="text-[1.35rem] leading-none text-white/90 mb-2" style={{ fontFamily: 'Kalam, cursive' }}>como quieres que te Lllamen?</label>
+              <label className="text-[1.35rem] leading-none text-white/90 mb-2" style={{ fontFamily: 'Kalam, cursive' }}>como quieres que te llamen?</label>
               <input
                 type="text"
                 value={nombre}
@@ -187,8 +189,8 @@ export const RegisterPage: React.FC = () => {
           <div className="mt-8 text-center pb-2">
             <p className="text-white/70 text-[1.1rem]" style={{ fontFamily: 'Kalam, cursive' }}>
               ¿ya tienes una cuenta?{' '}
-              <Link 
-                to="/login" 
+              <Link
+                to="/login"
                 className="text-white hover:text-indigo-200 transition-colors duration-200"
               >
                 inicia sesión

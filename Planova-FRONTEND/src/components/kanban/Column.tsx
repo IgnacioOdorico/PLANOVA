@@ -4,6 +4,7 @@ import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { Columna, Tarea, Prioridad, Estado } from '../../types';
 import TareaCard from './TareaCard';
 import { columnaService } from '../../services/columnaService';
+import GlassCard from '../common/GlassCard';
 
 interface ColumnProps {
   column: Columna;
@@ -118,15 +119,12 @@ const Column: React.FC<ColumnProps> = ({
   return (
     <div 
       ref={setNodeRef}
-      className={`flex-shrink-0 w-[320px] transition-colors duration-200 ${isOver ? 'bg-white/5' : ''} rounded-3xl`}
+      className={`flex-shrink-0 w-[320px] h-full transition-colors duration-200 ${isOver ? 'bg-white/5' : ''} rounded-3xl`}
     >
-      <div 
-        className="h-full flex flex-col rounded-3xl backdrop-blur-lg"
-        style={{
-          border: '4px solid rgba(255,255,255,0.15)',
-          background: 'rgba(255,255,255,0.02)',
-          boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.1)'
-        }}
+      <GlassCard 
+        variant="extreme"
+        sparkleCount={10}
+        className="h-full flex flex-col rounded-3xl"
       >
         {/* Column Header */}
         <div className="p-4 border-b-4 border-white/10">
@@ -215,7 +213,7 @@ const Column: React.FC<ColumnProps> = ({
         >
           <span className="text-white/60 text-4xl font-light hover:text-white transition-colors" style={{ lineHeight: '0.8' }}>+</span>
         </div>
-      </div>
+      </GlassCard>
     </div>
   );
 };
