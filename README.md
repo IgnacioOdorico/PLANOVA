@@ -106,17 +106,22 @@ En cada etapa de este proyecto hemos identificado oportunidades para que **PLANO
 
 <p align="center">
   <strong>Portal de Acceso (Glassmorphism UI)</strong><br>
-  <img src="assets/login.png" width="800px" alt="Planova Login">
+  <img src="assets/login.jpeg" width="800px" alt="Planova Login">
 </p>
 
 <p align="center">
   <strong>Dashboard de Proyectos</strong><br>
-  <img src="assets/home.png" width="800px" alt="Planova Dashboard">
+  <img src="assets/home.jpeg" width="800px" alt="Planova Dashboard">
 </p>
 
 <p align="center">
   <strong>Tablero Kanban Interactivo</strong><br>
-  <img src="assets/kanban.png" width="800px" alt="Planova Kanban">
+  <img src="assets/kanba.jpeg" width="800px" alt="Planova Kanban">
+</p>
+
+<p align="center">
+  <strong>Gestión de Notas y Comentarios</strong><br>
+  <img src="assets/notas.jpeg" width="800px" alt="Planova Notas">
 </p>
 
 ---
