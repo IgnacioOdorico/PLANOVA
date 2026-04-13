@@ -100,6 +100,27 @@ En cada etapa de este proyecto hemos identificado oportunidades para que **PLANO
 
 ---
 
+## 📸 Capturas de Pantalla
+
+¡Mirá cómo se ve la experiencia Planova!
+
+<p align="center">
+  <strong>Dashboard de Proyectos</strong><br>
+  <img src="assets/home.png" width="800px" alt="Planova Dashboard">
+</p>
+
+<p align="center">
+  <strong>Tablero Kanban Interactivo</strong><br>
+  <img src="assets/kanban.png" width="800px" alt="Planova Kanban">
+</p>
+
+<p align="center">
+  <strong>Gestión de Tareas y Comentarios</strong><br>
+  <img src="assets/login.png" width="800px" alt="Planova Detalles">
+</p>
+
+---
+
 <p align="center">
   Hecho con ❤️ por el equipo de Planova.<br>
   <i>"Tu productividad, elevada al cuadrado."</i>
