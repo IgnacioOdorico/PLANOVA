@@ -45,7 +45,7 @@ export const columnaService = {
   /**
    * Reorder a column
    */
-  reorder: async (id: number, orden: number): Promise<void> => {
+  reorder: async (id: number, orden: number): Promise<Columna> => {
     return columnaApi.reorder(id, orden);
   },
 };

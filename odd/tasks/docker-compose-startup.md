@@ -37,4 +37,5 @@ _(updated per task)_
 - Fix found in T4: bare `timeout` can resolve to GNU coreutils when PATH has Git tools; bat now calls `%SystemRoot%\System32\timeout.exe`.
 
 ## Next step
-Fix the `columnaService.ts` type error and switch frontend Dockerfile back to `npm run build`.
+Done. Merge to main and push.
+- T5: fixed `columnaService.reorder` return type (`Promise<Columna>`), Dockerfile back to `npm run build`; `npm run build`: OK; frontend image rebuilt, `GET :5173/` 200, `/api/` 401.
