@@ -35,38 +35,65 @@
 
 ## 🚀 Guía de Inicio Rápido
 
-### Requisitos Previos
-- Java 17+
-- Node.js 18+
-- MySQL 8+
-- Maven
+Hay dos formas de ejecutar Planova. La **Opción A (Docker)** es la recomendada: no necesitás instalar Java, Node ni MySQL.
 
-### 1. Clonar el repositorio e instalar dependencias
+### 🐳 Opción A: con Docker (recomendada)
+
+**Requisito único:** [Docker Desktop](https://www.docker.com/products/docker-desktop/) instalado.
+
+1. **Cloná el repositorio:**
+   ```bash
+   git clone https://github.com/tu-usuario/planova.git
+   cd planova
+   ```
+2. **Iniciá la aplicación:** hacé doble clic en `INICIAR.bat` (en Windows) o ejecutá:
+   ```bash
+   docker compose up -d --build
+   ```
+   > ⏳ La primera vez tarda unos minutos porque construye las imágenes y descarga dependencias. Las siguientes veces es mucho más rápido.
+   > Si `INICIAR.bat` no encuentra el archivo `.env`, lo crea automáticamente a partir de `.env.example`.
+   > Si usás `docker compose` a mano, primero copiá `.env.example` como `.env`.
+3. **Abrí la aplicación** en `http://localhost:5173`.
+4. **Detenela** con `DETENER.bat` o con:
+   ```bash
+   docker compose down
+   ```
+   Tus datos se conservan (volumen `planova-mysql-data`).
+
+**Configuración:** editá el archivo `.env` de la raíz del proyecto para cambiar contraseñas (`DB_PASSWORD`, `JWT_SECRET`) o puertos (`FRONTEND_PORT`, `BACKEND_PORT`, `MYSQL_PORT`).
+
+**Ver logs:**
 ```bash
-git clone https://github.com/tu-usuario/planova.git
-cd planova
+docker compose logs -f backend
 ```
 
-### 2. Configuración del Backend
-Dirígete a la carpeta `Planova-BACKEND/` y crea un archivo `.env` basado en `.env.example`:
-```env
-DB_URL=jdbc:mysql://localhost:3306/planova_db
-DB_USERNAME=tu_usuario
-DB_PASSWORD=tu_password
-JWT_SECRET=una_clave_secreta_muy_larga_y_segura
-```
-Luego ejecuta:
-```bash
-mvn spring-boot:run
-```
+### 🛠 Opción B: instalación manual (desarrollo)
 
-### 3. Configuración del Frontend
-Dirígete a la carpeta `Planova-FRONTEND/`:
-```bash
-npm install
-npm run dev
-```
-La aplicación estará disponible en `http://localhost:5173`.
+**Requisitos:** Java 17, Maven (o el `mvnw` incluido), MySQL 8 y Node.js 18+.
+
+1. **Backend:** creá `Planova-BACKEND/.env` basándote en `Planova-BACKEND/.env.example`:
+   ```env
+   DB_URL=jdbc:mysql://localhost:3306/planova
+   DB_USERNAME=tu_usuario
+   DB_PASSWORD=tu_password
+   JWT_SECRET=una_clave_secreta_muy_larga_y_segura
+   ```
+   El backend carga ese archivo automáticamente, así que alcanza con ejecutar desde `Planova-BACKEND/`:
+   ```bash
+   ./mvnw spring-boot:run
+   ```
+2. **Frontend:** desde `Planova-FRONTEND/`:
+   ```bash
+   npm install
+   npm run dev
+   ```
+   La aplicación estará disponible en `http://localhost:5173`.
+
+### 🩺 Problemas frecuentes
+
+- **Puerto en uso:** cambiá `FRONTEND_PORT`, `BACKEND_PORT` o `MYSQL_PORT` en `.env` y volvé a iniciar.
+- **Docker no está corriendo:** abrí Docker Desktop y esperá a que termine de arrancar (`INICIAR.bat` intenta abrirlo por vos).
+- **`JAVA_HOME` inválido (modo manual):** apuntalo a una instalación de JDK 17 válida.
 
 ---
 

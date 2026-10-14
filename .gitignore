@@ -1,0 +1,11 @@
+# Local secrets (root)
+/.env
+
+# OS / IDE
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Logs
+*.log

@@ -1,0 +1,16 @@
+# NEVER ship .env: DotEnvConfig reads it and overrides real env vars
+.env
+.env.*
+!.env.example
+target
+.idea
+.vscode
+.settings
+.classpath
+.project
+.factorypath
+.git
+.gitignore
+*.log
+backend_log.txt
+*.md
