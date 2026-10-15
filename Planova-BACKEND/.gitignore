@@ -34,3 +34,7 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Local profile overrides (may contain credentials) ###
+application-dev.properties
+application-local.properties
